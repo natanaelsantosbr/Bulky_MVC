@@ -8,7 +8,7 @@ namespace BulkyWeb.Models
         public int Id { get; set; }
         [Required]
         [Display(Name = "Category Name")]
-        [MaxLength]
+        [MaxLength(100)]
         public string Name { get; set; }
         [Display(Name ="Display Order")]
         [Range(1,100, ErrorMessage = "Display Order must be between 1-100")]
