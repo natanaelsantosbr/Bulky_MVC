@@ -4,8 +4,9 @@ using Bulky.Models.Models;
 using Bulky.Models.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BulkyWeb.Controllers
+namespace BulkyWeb.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -30,12 +31,12 @@ namespace BulkyWeb.Controllers
         [HttpPost]
         public IActionResult Create(Category category)
         {
-            if(category.Name == category.DisplayOrder.ToString())
+            if (category.Name == category.DisplayOrder.ToString())
             {
                 ModelState.AddModelError("name", "The DisplayOrder cannot exaclty match Name.");
             }
 
-            if (ModelState.IsValid) 
+            if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Add(category);
                 _unitOfWork.Save();
@@ -44,7 +45,7 @@ namespace BulkyWeb.Controllers
             }
 
             return View();
-            
+
         }
 
         public IActionResult Edit(int? id)
