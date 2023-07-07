@@ -1,8 +1,10 @@
-﻿using Bulky.DataAccess.Data;
+﻿ using Bulky.DataAccess.Data;
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models.Models;
 using Bulky.Models.Repository.IRepository;
+using BulkyWeb.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -23,52 +25,62 @@ namespace BulkyWeb.Areas.Admin.Controllers
             return View(objProductList);
         }
 
-        public IActionResult Create()
+        public IActionResult Upsert(int? id)
         {
-            return View(new Product());
+            var categoryList = _unitOfWork.Category.GetAll().Select(a => new SelectListItem
+            {
+                Text = a.Name,
+                Value = a.Id.ToString(),
+            });
+
+            var model = new ProductVM
+            {
+                CategoryList = categoryList
+            };
+
+            if (id == null || id == 0)
+            {
+                model = new ProductVM
+                {
+                    CategoryList = categoryList,
+                    Product = new Product()
+                };
+
+                return View(model);
+            }
+            else
+            {
+                model.Product = this._unitOfWork.Product.Get(a=> a.Id== id);
+                return View(model);
+            }            
         }
 
         [HttpPost]
-        public IActionResult Create(Product Product)
+        public IActionResult Upsert(ProductVM model, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Product.Add(Product);
+                _unitOfWork.Product.Add(model.Product);
                 _unitOfWork.Save();
                 TempData["success"] = "Product created sucessfully";
                 return RedirectToAction(nameof(Index));
             }
-
-            return View();
-
-        }
-
-        public IActionResult Edit(int? id)
-        {
-            if (id == null || id == 0)
-                return NotFound();
-
-            var Product = _unitOfWork.Product.Get(c => c.Id == id);
-
-            if (Product == null)
-                return NotFound();
-
-            return View(Product);
-        }
-
-        [HttpPost]
-        public IActionResult Edit(Product Product)
-        {
-            if (ModelState.IsValid)
+            else
             {
-                _unitOfWork.Product.Update(Product);
-                _unitOfWork.Save();
-                TempData["success"] = "Product updated sucessfully";
-                return RedirectToAction(nameof(Index));
+                var categoryList = _unitOfWork.Category.GetAll().Select(a => new SelectListItem
+                {
+                    Text = a.Name,
+                    Value = a.Id.ToString(),
+                });
+
+                model = new ProductVM
+                {
+                    CategoryList = categoryList,
+                    Product = new Product()
+                };
+
+                return View(model);
             }
-
-            return View();
-
         }
 
         public IActionResult Delete(int? id)
