@@ -26,10 +26,4 @@
     <Folder Include="wwwroot\images\product\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="wwwroot\images\product\887a81af-32a5-4070-afcb-7e2409b91c99.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

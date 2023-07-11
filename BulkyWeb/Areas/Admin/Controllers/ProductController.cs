@@ -22,7 +22,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            var objProductList = _unitOfWork.Product.GetAll();
+            var objProductList = _unitOfWork.Product.GetAll(includeProperties: "Category");
 
             return View(objProductList);
         }
@@ -58,7 +58,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Upsert(ProductVM model, IFormFile? file)
+        public IActionResult Upsert(ProductVM productVM, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
@@ -69,16 +69,28 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     var productPath = Path.Combine(wwwRootPath, @"images\product");
 
+                    if(!string.IsNullOrEmpty(productVM.Product.ImageUrl)) {
+
+                        var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
+
+                        if(System.IO.File.Exists(oldImagePath))
+                            System.IO.File.Delete(oldImagePath);
+                    }
+
                     using (var fileSteam = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
                     {
                         file.CopyTo(fileSteam);
                     }
-                    model.Product.ImageUrl = @$"\images\product\{fileName}";
+                    productVM.Product.ImageUrl = @$"\images\product\{fileName}";
 
                 }
 
 
-                _unitOfWork.Product.Add(model.Product);
+                if (productVM.Product.Id == 0)
+                    _unitOfWork.Product.Add(productVM.Product);
+                else
+                    _unitOfWork.Product.Update(productVM.Product);
+
                 _unitOfWork.Save();
                 TempData["success"] = "Product created sucessfully";
                 return RedirectToAction(nameof(Index));
@@ -91,13 +103,13 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     Value = a.Id.ToString(),
                 });
 
-                model = new ProductVM
+                productVM = new ProductVM
                 {
                     CategoryList = categoryList,
                     Product = new Product()
                 };
 
-                return View(model);
+                return View(productVM);
             }
         }
 
