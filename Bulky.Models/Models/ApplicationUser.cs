@@ -11,7 +11,7 @@ namespace Bulky.Models.Models
     public class ApplicationUser : IdentityUser
     {
         [Required]
-        public int Name { get; set; }
+        public string Name { get; set; }
 
         public string? StreetAddrress { get; set; }
 
