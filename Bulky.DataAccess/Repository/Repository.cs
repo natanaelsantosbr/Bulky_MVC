@@ -27,9 +27,15 @@ namespace Bulky.DataAccess.Repository
             _contextSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter, string? includeProperties)
+        public T Get(Expression<Func<T, bool>> filter, string? includeProperties, bool tracked )
         {
-            IQueryable<T> query = _contextSet;
+            IQueryable<T> query;
+            
+            if(tracked)
+            query = _contextSet;
+            else
+                query = _contextSet.AsNoTracking();
+
             query = query.Where(filter);
 
             if (!string.IsNullOrEmpty(includeProperties))
