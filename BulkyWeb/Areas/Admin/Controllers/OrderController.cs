@@ -1,4 +1,5 @@
 ﻿using Bulky.DataAccess.Repository.IRepository;
+using Bulky.Models.ViewModels;
 using Bulky.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -21,13 +22,43 @@ namespace BulkyWeb.Areas.Admin.Controllers
 			return View();
 		}
 
+        public IActionResult Details(int orderId)
+        {
+			var model = new OrderVM()
+			{
+				OrderHeader = _unitOfWork.OrderHeader.Get(a => a.Id == orderId, includeProperties: "ApplicationUser"),
+				OrderDetail = _unitOfWork.OrderDetail.GetAll(a => a.OrderHeaderId == orderId, includeProperties: "Product")
+			};
 
-		#region API Calls
+            return View(model);
+        }
 
-		[HttpGet]
-		public IActionResult GetAll()
+
+        #region API Calls
+
+        [HttpGet]
+		public IActionResult GetAll(string status)
 		{
 			var obj = _unitOfWork.OrderHeader.GetAll(includeProperties: "ApplicationUser");
+
+			switch (status)
+			{
+				case "pending":
+					obj = obj.Where(a => a.PaymentStatus == SD.PaymentStatusDelayedPayment);
+					break;
+                case "inprocess":
+                    obj = obj.Where(a => a.PaymentStatus == SD.StatusProcess);
+                    break;
+                case "completed":
+                    obj = obj.Where(a => a.PaymentStatus == SD.StatusShipped);
+                    break;
+                case "approved":
+                    obj = obj.Where(a => a.PaymentStatus == SD.StatusApproved);
+                    break;
+                default:
+					break;
+			}
+
 
 			return Json(new { data = obj });
 		}
